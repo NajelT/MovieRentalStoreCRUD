@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Movie rental store</h2>
+
+<table id="moviesList">
+
+
+
+</table>
+
+<form action="#">
+    <br>
+    <input id="movie_title" placeholder="MovieTitle">
+    <br>
+    <input id="movie_category" placeholder="MovieCategory">
+    <br>
+    <input id="movie_main_character" placeholder="MovieMainCharacter">
+    <br>
+    <input id="movie_description" placeholder="MovieDescription">
+    <br>
+    <input id="movie_release_date" placeholder="MovieReleaseDate">
+    <br>
+    <input id="movie_price" placeholder="MoviePrice">
+    <button onclick="createMovie()">add movie to the library</button>
+    <br>
+    <br>
+</form>
+
+<input id="search_field">
+<button onclick="searchByTitle()">Search by title</button>
+
+<script>
+    function searchByTitle(){
+        var movieTitle = document.getElementById("search_field").value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var movie = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Movie id</th>\n' +
+                    '        <th>Title</th>\n' +
+                    '        <th>Category</th>\n' +
+                    '        <th>Main character</th>\n' +
+                    '        <th>Description</th>\n' +
+                    '        <th>Release date</th>\n' +
+                    '        <th>Price</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                html = html + '<tr><td>' + movie.id + '</td>\n' +
+                        '        <td>' + movie.title + '</td>\n' +
+                        '        <td>' + movie.category + '</td>\n' +
+                        '        <td>' + movie.mainCharacter + '</td>\n' +
+                        '        <td>' + movie.description + '</td>\n' +
+                        '        <td>' + movie.releaseDate + '</td>\n' +
+                        '        <td>' + movie.price + '</td>' +
+                        '        <td><button onclick="deleteMovie('+movie.id+')">Delete</button></td></tr>';
+                document.getElementById("moviesList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/movies/findByTitle?title=" + movieTitle, true);
+        xhttp.send();
+    }
+
+    function deleteMovie(movieId){
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("DELETE", "http://localhost:8080/movies/delete/" + movieId, true);
+        xhttp.send();
+    }
+
+    function createMovie() {
+        var movieTitle = document.getElementById("movie_title").value;
+        var movieCategory = document.getElementById("movie_category").value;
+        var movieMainCharacter = document.getElementById("movie_main_character").value;
+        var movieDescription = document.getElementById("movie_description").value;
+        var movieReleaseDate = document.getElementById("movie_release_date").value;
+        var moviePrice = document.getElementById("movie_price").value;
+
+        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+        xmlhttp.open("POST", "http://localhost:8080/movies/save");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({
+            title: movieTitle,
+            category: movieCategory,
+            mainCharacter: movieMainCharacter,
+            description: movieDescription,
+            releaseDate: movieReleaseDate,
+            price: moviePrice
+        }));
+
+        loadMovies();
+    }
+
+    function loadMovies() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var movies = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Movie id</th>\n' +
+                    '        <th>Title</th>\n' +
+                    '        <th>Category</th>\n' +
+                    '        <th>Main character</th>\n' +
+                    '        <th>Description</th>\n' +
+                    '        <th>Release date</th>\n' +
+                    '        <th>Price</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                for (let i = 0; i < movies.length; i++) {
+                    var movie = movies[i];
+                    console.log(movie);
+                    html = html + '<tr><td>' + movie.id + '</td>\n' +
+                        '        <td>' + movie.title + '</td>\n' +
+                        '        <td>' + movie.category + '</td>\n' +
+                        '        <td>' + movie.mainCharacter + '</td>\n' +
+                        '        <td>' + movie.description + '</td>\n' +
+                        '        <td>' + movie.releaseDate + '</td>\n' +
+                        '        <td>' + movie.price + '</td>' +
+                    '        <td><button onclick="deleteMovie('+movie.id+')">Delete</button></td></tr>';
+                }
+                document.getElementById("moviesList").innerHTML = html;
+            }
+        }
+        xhttp.open("GET", "http://localhost:8080/movies/findAll", true);
+        xhttp.send();
+    }
+
+    loadMovies();
+</script>
+
+</body>
+</html>
+
